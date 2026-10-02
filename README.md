@@ -32,9 +32,10 @@ It only returns blocks that are already free inside the virtual disk.
 
 ## Install
 
-Once installed, `qcompact` is on your `PATH` and can be run from any terminal.
+There are two ways to install: the PowerShell one-liner, or a direct download
+from the releases page.
 
-### PowerShell one-liner (no package manager required)
+### PowerShell one-liner
 
 ```powershell
 iwr https://raw.githubusercontent.com/Keeferf/qcompact/main/install.ps1 -UseBasicParsing | iex
@@ -47,32 +48,18 @@ afterward.
 Pin a specific version, or uninstall:
 
 ```powershell
-# Version 1.0.0
-& ([scriptblock]::Create((iwr https://raw.githubusercontent.com/Keeferf/qcompact/main/install.ps1 -UseBasicParsing).Content)) -Version 1.0.0
+# Pin a version
+& ([scriptblock]::Create((iwr https://raw.githubusercontent.com/Keeferf/qcompact/main/install.ps1 -UseBasicParsing).Content)) -Version 1.0.1
 
 # Uninstall
 & ([scriptblock]::Create((iwr https://raw.githubusercontent.com/Keeferf/qcompact/main/install.ps1 -UseBasicParsing).Content)) -Uninstall
 ```
 
-### Scoop
-
-```powershell
-scoop install https://raw.githubusercontent.com/Keeferf/qcompact/main/qcompact.json
-```
-
-### winget
-
-```powershell
-winget install Keeferf.qcompact
-```
-
-> The winget package is submitted to the community repository after the first
-> release. Until then, use the one-liner, Scoop, or a direct download.
-
 ### Direct download
 
 Download `qcompact.exe` from the
 [latest release](https://github.com/Keeferf/qcompact/releases/latest) and run it.
+Every release also publishes a `qcompact.exe.sha256` checksum.
 
 After installing, open a **new** terminal so the updated `PATH` is picked up.
 
