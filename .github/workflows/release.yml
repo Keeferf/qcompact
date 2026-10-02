@@ -32,10 +32,18 @@ jobs:
 
       - name: Package
         shell: pwsh
-        run: Compress-Archive -Path publish/qcompact.exe -DestinationPath qcompact-win-x64.zip
+        run: |
+          Compress-Archive -Path publish/qcompact.exe -DestinationPath qcompact-win-x64.zip
+          $hash = (Get-FileHash publish/qcompact.exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  qcompact.exe" | Out-File -FilePath publish/qcompact.exe.sha256 -Encoding ascii -NoNewline
 
       - name: Create GitHub Release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create $env:GITHUB_REF_NAME qcompact-win-x64.zip --generate-notes
+        run: |
+          gh release create $env:GITHUB_REF_NAME `
+            qcompact-win-x64.zip `
+            publish/qcompact.exe `
+            publish/qcompact.exe.sha256 `
+            --generate-notes
