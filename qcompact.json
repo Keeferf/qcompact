@@ -1,13 +1,13 @@
 {
     "##": "Scoop manifest. Install with: scoop install https://raw.githubusercontent.com/Keeferf/qcompact/main/qcompact.json",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Safely reclaim unused disk space from WSL 2 virtual disks.",
     "homepage": "https://github.com/Keeferf/qcompact",
     "license": "MIT",
     "architecture": {
         "64bit": {
-            "url": "https://github.com/Keeferf/qcompact/releases/download/v1.0.0/qcompact-win-x64.zip",
-            "hash": "c66ae34faf32fe0ba84e272e2a5f3e5a06206539345c7bf5e1d7009f9b1296a2",
+            "url": "https://github.com/Keeferf/qcompact/releases/download/v1.0.1/qcompact-win-x64.zip",
+            "hash": "37697e41f2cef58a62c1428317a2d50d124be8cd7be5a35a75bd98a1549d5b37",
             "bin": "qcompact.exe",
             "shortcuts": [
                 [
