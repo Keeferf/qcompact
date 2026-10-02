@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/QCompact/QCompact.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/QCompact.Tests/QCompact.Tests.csproj" />
+  </Folder>
+</Solution>

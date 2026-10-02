@@ -12,9 +12,12 @@ $RECYCLE.BIN/
 .idea/
 *.swp
 
-# PowerShell
+# Logs / temp
 *.log
 *.tmp
 
-# Pester
-testResults*.xml
+# .NET
+bin/
+obj/
+publish/
+*.user

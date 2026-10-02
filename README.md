@@ -1,11 +1,11 @@
-# quick-compact
+# qcompact
 
 Safely reclaim unused disk space from WSL 2 virtual disks.
 
 WSL 2 stores each distribution in a dynamically expanding `ext4.vhdx`. Files you
 delete inside Linux free space *inside* the disk, but the VHDX file on Windows
-does not shrink on its own. `quick-compact` finds those VHDX files, shuts WSL
-down, compacts them with DiskPart, and tells you how much space you got back.
+does not shrink on its own. `qcompact` finds those VHDX files, shuts WSL down,
+compacts them with DiskPart, and tells you how much space you got back.
 
 ## What it does
 
@@ -27,88 +27,109 @@ It only returns blocks that are already free inside the virtual disk.
 ## Requirements
 
 - Windows 10 or 11 with WSL 2.
-- PowerShell 5.1 or later (Windows PowerShell or PowerShell 7+).
-- Administrator rights. DiskPart compaction needs elevation, so the script
-  prompts for UAC automatically.
+- Administrator rights. DiskPart compaction needs elevation, so run from an
+  elevated terminal or pass `--elevate` to trigger a UAC prompt.
+
+## Install
+
+Once installed, `qcompact` is on your `PATH` and can be run from any terminal.
+
+### Scoop
+
+```powershell
+scoop install https://raw.githubusercontent.com/Keeferf/qcompact/main/qcompact.json
+```
+
+### winget
+
+```powershell
+winget install Keeferf.qcompact
+```
+
+> The winget package is submitted to the community repository after the first
+> release. Until then, use Scoop or download the release directly.
+
+### Direct download
+
+Download `qcompact.exe` from the
+[latest release](https://github.com/Keeferf/qcompact/releases/latest) and run it.
+
+After installing with Scoop or winget, open a **new** terminal so the updated
+`PATH` is picked up.
 
 ## Usage
 
-Open PowerShell in this folder and run:
+```
+qcompact [options]
+```
+
+| Option | Description |
+| ------ | ----------- |
+| `-d`, `--distro <name>` | One or more distributions to compact. Repeatable. Defaults to all detected. |
+| `--dry-run` | List detected disks and sizes, then exit. Changes nothing; no elevation. |
+| `--elevate` | Relaunch elevated (UAC) if not already running as administrator. |
+| `-y`, `--yes` | Do not prompt for confirmation. Required when not running interactively. |
+| `--json` | Emit a machine-readable JSON result instead of human-readable output. |
+| `--keep-log` | Keep the transcript log file instead of deleting it. |
+| `--verbose` | Verbose output. |
+| `-v`, `--version` | Show version information. |
+| `-h`, `--help` | Show help. |
+
+### Examples
 
 ```powershell
-.\quick-compact.ps1
+# Preview without changing anything
+qcompact --dry-run
+
+# Compact everything (prompts for confirmation)
+qcompact
+
+# Compact one distribution
+qcompact --distro Ubuntu
+
+# Non-interactive: skip the prompt
+qcompact --yes
+
+# Run from a non-elevated shell, prompting for UAC
+qcompact --elevate
 ```
 
-Or launch it from Explorer / cmd with:
+### Exit codes
 
-```bat
-quick-compact.bat
-```
-
-> `quick-compact.bat` is only a launcher; it just calls the PowerShell script.
-
-### Preview first
-
-```powershell
-.\quick-compact.ps1 -DryRun
-```
-
-`-DryRun` lists the detected disks and their sizes, then exits without shutting
-WSL down or changing anything. It does not request elevation.
-
-### Compact one distribution
-
-```powershell
-.\quick-compact.ps1 -Distro Ubuntu
-```
-
-### Run from an already-elevated shell
-
-```powershell
-.\quick-compact.ps1 -NoElevate
-```
-
-### Keep the transcript for troubleshooting
-
-```powershell
-.\quick-compact.ps1 -KeepLog
-```
-
-### Standard `-WhatIf` support
-
-```powershell
-.\quick-compact.ps1 -WhatIf
-```
-
-## Parameters
-
-| Parameter    | Description                                                              |
-| ------------ | ------------------------------------------------------------------------ |
-| `-Distro`    | One or more distribution names to compact. Defaults to all detected.     |
-| `-DryRun`    | Report only; no shutdown, no compaction, no elevation.                   |
-| `-NoElevate` | Do not self-elevate (for use from an elevated shell).                    |
-| `-KeepLog`   | Keep the transcript log instead of deleting it.                          |
-| `-WhatIf`    | Standard PowerShell switch; shows what would happen.                     |
+| Code | Meaning |
+| ---- | ------- |
+| `0` | Success. |
+| `1` | One or more compactions failed. |
+| `2` | Usage, permission, or confirmation error. |
 
 ## Notes and safety
 
-- **WSL is shut down.** Running distributions and their processes are terminated.
-  Save your work first.
+- **WSL is shut down.** Running distributions and their processes are
+  terminated. Save your work first.
 - Compaction is safe but can take a while on large disks.
 - The first size shown is the VHDX file size on Windows; after compaction the
   file is smaller by the amount of free space that was returned.
 - If compaction fails for one distribution, the others are still attempted and
-  the script exits with a non-zero code for automation.
+  the program exits with a non-zero code for automation.
 
 ## Development
 
-Tests use [Pester](https://pester.dev/) 5+ and run on Windows:
+Requires the .NET SDK (10.0 or later).
 
 ```powershell
-Invoke-Pester ./tests
+dotnet build -c Release
+dotnet test -c Release
 ```
 
-CI (`validate.yml`) runs PSScriptAnalyzer and Pester on `windows-latest`.
+Build a standalone single-file executable:
+
+```powershell
+dotnet publish src/QCompact/QCompact.csproj -c Release -r win-x64 `
+  --self-contained true -p:PublishSingleFile=true -o publish
+```
+
+CI (`validate.yml`) builds and tests on `windows-latest`. Pushing a `v*` tag
+builds `qcompact.exe` and attaches it to a GitHub Release (`release.yml`).
 
 ## License
 

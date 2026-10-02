@@ -1,0 +1,28 @@
+{
+    "##": "Scoop manifest. After the first release run `checkver -u` (or fill the hash manually) and commit. Install with: scoop install https://raw.githubusercontent.com/Keeferf/qcompact/main/qcompact.json",
+    "version": "1.0.0",
+    "description": "Safely reclaim unused disk space from WSL 2 virtual disks.",
+    "homepage": "https://github.com/Keeferf/qcompact",
+    "license": "MIT",
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/Keeferf/qcompact/releases/download/v1.0.0/qcompact-win-x64.zip",
+            "hash": "REPLACE_WITH_SHA256_OF_RELEASE_ZIP",
+            "bin": "qcompact.exe",
+            "shortcuts": [
+                [
+                    "qcompact.exe",
+                    "qcompact"
+                ]
+            ]
+        }
+    },
+    "checkver": "github",
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "https://github.com/Keeferf/qcompact/releases/download/v$version/qcompact-win-x64.zip"
+            }
+        }
+    }
+}
