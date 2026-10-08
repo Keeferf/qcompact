@@ -99,15 +99,17 @@ public static class Program
 
         if (!Elevation.IsAdmin())
         {
-            if (!options.Elevate)
+            // Machine-readable output must stay on the caller's stdout, so never
+            // auto-elevate (which spawns a separate console) for --json.
+            if (!options.Elevate || options.Json)
             {
                 log.Error(
                     "Administrator rights are required to compact virtual disks. " +
-                    "Re-run from an elevated terminal, or pass --elevate.");
+                    "Run from an elevated terminal, or drop --no-elevate to allow a UAC prompt.");
                 return 2;
             }
 
-            log.Info($"{Environment.NewLine}Elevation is required. Relaunching...");
+            log.Info($"{Environment.NewLine}Administrator rights are required. Relaunching with a UAC prompt...");
             return Elevation.RelaunchElevated(args);
         }
 
@@ -127,6 +129,15 @@ public static class Program
                 log.Info("Aborted.");
                 return 0;
             }
+        }
+
+        log.Info($"{Environment.NewLine}Closing any leftover DiskPart sessions...");
+        DiskpartCompactor.CloseExistingDiskpart(log.Info);
+
+        log.Info($"{Environment.NewLine}Trimming free space in {targets.Count} distribution(s)...");
+        foreach (var target in targets)
+        {
+            TrimDistro(target.Distro, log);
         }
 
         log.Info($"{Environment.NewLine}Shutting down WSL...");
@@ -171,6 +182,53 @@ public static class Program
         }
 
         return exitCode;
+    }
+
+    private static void TrimDistro(string distro, Logger log)
+    {
+        try
+        {
+            var startInfo = new ProcessStartInfo("wsl.exe")
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            };
+            startInfo.ArgumentList.Add("-d");
+            startInfo.ArgumentList.Add(distro);
+            startInfo.ArgumentList.Add("-u");
+            startInfo.ArgumentList.Add("root");
+            startInfo.ArgumentList.Add("--");
+            startInfo.ArgumentList.Add("fstrim");
+            startInfo.ArgumentList.Add("-av");
+
+            using var process = Process.Start(startInfo);
+            if (process is null)
+            {
+                log.Warn($"Could not start wsl.exe to trim {distro}.");
+                return;
+            }
+
+            var output = process.StandardOutput.ReadToEnd();
+            var error = process.StandardError.ReadToEnd();
+            process.WaitForExit();
+
+            if (process.ExitCode != 0)
+            {
+                log.Warn($"fstrim failed for {distro} (exit {process.ExitCode}). {error.Trim()}");
+                return;
+            }
+
+            foreach (var line in output.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+            {
+                log.Info($"  {distro}: {line.TrimEnd()}");
+            }
+        }
+        catch (Exception ex)
+        {
+            log.Warn($"Could not trim {distro}: {ex.Message}");
+        }
     }
 
     private static void ShutdownWsl()
@@ -250,13 +308,16 @@ public static class Program
         Options:
           -d, --distro <name>   Distribution(s) to compact. Repeatable. Default: all.
               --dry-run         List detected disks and sizes; change nothing.
-              --elevate         Relaunch elevated (UAC) if not already admin.
+              --no-elevate      Do not relaunch elevated; require an admin shell.
           -y, --yes             Do not prompt for confirmation.
               --json            Emit a machine-readable JSON result.
               --keep-log        Keep the transcript log file.
               --verbose         Verbose output.
           -v, --version         Show version information.
           -h, --help            Show this help.
+
+        qcompact self-elevates with a UAC prompt when it needs administrator
+        rights. Use --no-elevate to disable; --json never auto-elevates.
 
         Exit codes:
           0  success

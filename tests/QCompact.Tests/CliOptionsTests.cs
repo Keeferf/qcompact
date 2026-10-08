@@ -27,6 +27,15 @@ public class CliOptionsTests
     }
 
     [Fact]
+    public void ElevatesByDefaultAndNoElevateDisablesIt()
+    {
+        Assert.True(CliOptions.Parse(Array.Empty<string>()).Elevate);
+
+        var options = CliOptions.Parse(new[] { "--no-elevate" });
+        Assert.False(options.Elevate);
+    }
+
+    [Fact]
     public void CollectsRepeatedDistroValues()
     {
         var options = CliOptions.Parse(new[] { "-d", "Ubuntu", "--distro", "Debian", "--distro=Fedora" });

@@ -11,9 +11,10 @@ compacts them with DiskPart, and tells you how much space you got back.
 
 1. Detects installed WSL 2 virtual disks from the `Lxss` registry hive.
 2. Shows each distribution and its current Windows-side disk usage.
-3. Shuts WSL down (`wsl --shutdown`).
-4. Compacts each `ext4.vhdx` with DiskPart.
-5. Reports the space recovered.
+3. Runs `fstrim` inside each distribution so freed blocks are marked free.
+4. Shuts WSL down (`wsl --shutdown`).
+5. Compacts each `ext4.vhdx` with DiskPart.
+6. Reports the space recovered.
 
 ## What it does *not* do
 
@@ -27,8 +28,9 @@ It only returns blocks that are already free inside the virtual disk.
 ## Requirements
 
 - Windows 10 or 11 with WSL 2.
-- Administrator rights. DiskPart compaction needs elevation, so run from an
-  elevated terminal or pass `--elevate` to trigger a UAC prompt.
+- Administrator rights. DiskPart compaction needs elevation, so `qcompact`
+  self-elevates with a UAC prompt by default. Pass `--no-elevate` to disable
+  and require an already-elevated terminal instead.
 
 ## Install
 
@@ -49,7 +51,7 @@ Pin a specific version, or uninstall:
 
 ```powershell
 # Pin a version
-& ([scriptblock]::Create((iwr https://raw.githubusercontent.com/Keeferf/qcompact/main/install.ps1 -UseBasicParsing).Content)) -Version 1.0.1
+& ([scriptblock]::Create((iwr https://raw.githubusercontent.com/Keeferf/qcompact/main/install.ps1 -UseBasicParsing).Content)) -Version 1.0.2
 
 # Uninstall
 & ([scriptblock]::Create((iwr https://raw.githubusercontent.com/Keeferf/qcompact/main/install.ps1 -UseBasicParsing).Content)) -Uninstall
@@ -73,13 +75,16 @@ qcompact [options]
 | ------ | ----------- |
 | `-d`, `--distro <name>` | One or more distributions to compact. Repeatable. Defaults to all detected. |
 | `--dry-run` | List detected disks and sizes, then exit. Changes nothing; no elevation. |
-| `--elevate` | Relaunch elevated (UAC) if not already running as administrator. |
+| `--no-elevate` | Do not relaunch elevated. Fails if not already running as administrator. |
 | `-y`, `--yes` | Do not prompt for confirmation. Required when not running interactively. |
-| `--json` | Emit a machine-readable JSON result instead of human-readable output. |
+| `--json` | Emit a machine-readable JSON result instead of human-readable output. Never auto-elevates. |
 | `--keep-log` | Keep the transcript log file instead of deleting it. |
 | `--verbose` | Verbose output. |
 | `-v`, `--version` | Show version information. |
 | `-h`, `--help` | Show help. |
+
+> `--json` is meant for automation. Because self-elevation opens a separate
+> console, JSON mode never auto-elevates; run it from an already-elevated shell.
 
 ### Examples
 
@@ -87,7 +92,7 @@ qcompact [options]
 # Preview without changing anything
 qcompact --dry-run
 
-# Compact everything (prompts for confirmation)
+# Compact everything (prompts for UAC, then for confirmation)
 qcompact
 
 # Compact one distribution
@@ -96,8 +101,8 @@ qcompact --distro Ubuntu
 # Non-interactive: skip the prompt
 qcompact --yes
 
-# Run from a non-elevated shell, prompting for UAC
-qcompact --elevate
+# Already running as administrator; do not attempt a UAC relaunch
+qcompact --no-elevate
 ```
 
 ### Exit codes
