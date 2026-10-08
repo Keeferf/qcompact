@@ -6,7 +6,7 @@ public sealed class CliOptions
 
     public bool DryRun { get; private set; }
 
-    public bool Elevate { get; private set; }
+    public bool Elevate { get; private set; } = true;
 
     public bool Yes { get; private set; }
 
@@ -42,6 +42,9 @@ public sealed class CliOptions
                     break;
                 case "--elevate":
                     options.Elevate = true;
+                    break;
+                case "--no-elevate":
+                    options.Elevate = false;
                     break;
                 case "-y":
                 case "--yes":
