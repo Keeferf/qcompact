@@ -51,7 +51,7 @@ Pin a specific version, or uninstall:
 
 ```powershell
 # Pin a version
-& ([scriptblock]::Create((iwr https://raw.githubusercontent.com/Keeferf/qcompact/main/install.ps1 -UseBasicParsing).Content)) -Version 1.0.2
+& ([scriptblock]::Create((iwr https://raw.githubusercontent.com/Keeferf/qcompact/main/install.ps1 -UseBasicParsing).Content)) -Version 1.1.2
 
 # Uninstall
 & ([scriptblock]::Create((iwr https://raw.githubusercontent.com/Keeferf/qcompact/main/install.ps1 -UseBasicParsing).Content)) -Uninstall
