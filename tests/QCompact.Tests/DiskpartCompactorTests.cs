@@ -37,6 +37,9 @@ public class DiskpartCompactorTests
     [InlineData(1, "", "")]
     [InlineData(0, "Virtual Disk Service error:\r\nThe file is not found.", "")]
     [InlineData(0, "", "Access is denied.")]
+    [InlineData(0, "The system cannot find the file specified.", "")]
+    [InlineData(0, "DiskPart has encountered an error code 5.", "")]
+    [InlineData(0, "", "The operation failed.")]
     public void IsNotSuccessOnExitCodeOrFailureMarker(int exitCode, string output, string error)
     {
         Assert.False(DiskpartCompactor.IsSuccess(exitCode, output, error));
