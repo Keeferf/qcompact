@@ -20,6 +20,8 @@ public sealed class CliOptions
 
     public bool Version { get; private set; }
 
+    public bool SelfUpdate { get; private set; }
+
     public static CliOptions Parse(string[] args)
     {
         var options = new CliOptions();
@@ -58,6 +60,9 @@ public sealed class CliOptions
                     break;
                 case "--verbose":
                     options.Verbose = true;
+                    break;
+                case "self-update":
+                    options.SelfUpdate = true;
                     break;
                 case "-d":
                 case "--distro":

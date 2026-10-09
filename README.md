@@ -65,6 +65,18 @@ Every release also publishes a `qcompact.exe.sha256` checksum.
 
 After installing, open a **new** terminal so the updated `PATH` is picked up.
 
+### Updating
+
+`qcompact` can update itself:
+
+```powershell
+qcompact self-update
+```
+
+Downloads the latest release from GitHub, verifies its SHA256 checksum, swaps
+it into place, and relaunches with the new version. A normal run (not `--json`
+or `--dry-run`) also prints a one-line notice when a newer release exists.
+
 ## Usage
 
 ```
@@ -100,6 +112,9 @@ qcompact --distro Ubuntu
 
 # Non-interactive: skip the prompt
 qcompact --yes
+
+# Update to the latest release from GitHub
+qcompact self-update
 
 # Already running as administrator; do not attempt a UAC relaunch
 qcompact --no-elevate

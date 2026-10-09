@@ -11,6 +11,15 @@ public class CliOptionsTests
         Assert.False(options.DryRun);
         Assert.False(options.Help);
         Assert.False(options.Version);
+        Assert.False(options.SelfUpdate);
+    }
+
+    [Fact]
+    public void ParsesSelfUpdate()
+    {
+        var options = CliOptions.Parse(new[] { "self-update" });
+
+        Assert.True(options.SelfUpdate);
     }
 
     [Fact]
