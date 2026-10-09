@@ -33,8 +33,10 @@ public class LoggerTests
         var path = Path.GetTempFileName();
         try
         {
-            using var log = new Logger(json: false, verbose: false, path);
-            act(log);
+            using (var log = new Logger(json: false, verbose: false, path))
+            {
+                act(log);
+            }
             return File.ReadAllText(path);
         }
         finally
