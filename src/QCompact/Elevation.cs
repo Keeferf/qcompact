@@ -35,10 +35,11 @@ public static class Elevation
 
         try
         {
-            using var process = Process.Start(startInfo)
-                ?? throw new InvalidOperationException("Failed to relaunch elevated.");
-            process.WaitForExit();
-            return process.ExitCode;
+            // Spawn the elevated process and return immediately so the original
+            // shell isn't left blocked waiting on it. The elevated run's exit
+            // code is not relayed back to the caller.
+            Process.Start(startInfo);
+            return 0;
         }
         catch (Win32Exception)
         {
