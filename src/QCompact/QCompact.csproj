@@ -15,4 +15,8 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="QCompact.Tests" />
+  </ItemGroup>
+
 </Project>

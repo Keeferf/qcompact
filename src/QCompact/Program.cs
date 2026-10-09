@@ -60,13 +60,16 @@ public static class Program
         }
     }
 
-    private static int Run(CliOptions options, string[] args, Logger log)
+    internal static int Run(
+        CliOptions options,
+        string[] args,
+        Logger log,
+        Func<IReadOnlyList<WslDisk>>? findDisks = null,
+        Func<bool>? isAdmin = null,
+        Action? shutdownWsl = null,
+        Action<string, Action<string>?>? compact = null)
     {
-        var targets = WslDiskLocator.Find()
-            .Where(disk => disk.Exists)
-            .Where(disk => options.Distros.Count == 0
-                || options.Distros.Contains(disk.Distro, StringComparer.OrdinalIgnoreCase))
-            .ToList();
+        var targets = SelectTargets(options, findDisks?.Invoke() ?? WslDiskLocator.Find());
 
         if (targets.Count == 0)
         {
@@ -97,7 +100,7 @@ public static class Program
             return 0;
         }
 
-        if (!Elevation.IsAdmin())
+        if (!(isAdmin?.Invoke() ?? Elevation.IsAdmin()))
         {
             // Machine-readable output must stay on the caller's stdout, so never
             // auto-elevate (which spawns a separate console) for --json.
@@ -141,7 +144,7 @@ public static class Program
         }
 
         log.Info($"{Environment.NewLine}Shutting down WSL...");
-        ShutdownWsl();
+        (shutdownWsl ?? ShutdownWsl)();
 
         var results = new List<DiskResult>();
         var exitCode = 0;
@@ -152,7 +155,7 @@ public static class Program
             log.Info($"Compacting {target.Distro}...");
             try
             {
-                DiskpartCompactor.Compact(target.Vhdx, log.Verbose);
+                (compact ?? DiskpartCompactor.Compact)(target.Vhdx, log.Verbose);
             }
             catch (Exception ex)
             {
@@ -183,6 +186,13 @@ public static class Program
 
         return exitCode;
     }
+
+    internal static List<WslDisk> SelectTargets(CliOptions options, IReadOnlyList<WslDisk> disks) =>
+        disks
+            .Where(disk => disk.Exists)
+            .Where(disk => options.Distros.Count == 0
+                || options.Distros.Contains(disk.Distro, StringComparer.OrdinalIgnoreCase))
+            .ToList();
 
     private static void TrimDistro(string distro, Logger log)
     {
