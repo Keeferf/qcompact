@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <AssemblyName>qcompact</AssemblyName>
     <RootNamespace>QCompact</RootNamespace>
-    <Version>1.1.2</Version>
+    <Version>1.1.3</Version>
     <LangVersion>latest</LangVersion>
     <InvariantGlobalization>true</InvariantGlobalization>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
