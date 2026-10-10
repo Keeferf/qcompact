@@ -33,8 +33,18 @@ public static class Program
             return 0;
         }
 
+        if (options.SelfUpdate)
+        {
+            return SelfUpdate.Run();
+        }
+
         var logPath = Path.Combine(Path.GetTempPath(), $"qcompact-{DateTime.Now:yyyyMMdd-HHmmss}.log");
         using var log = new Logger(options.Json, options.Verbose, logPath);
+
+        if (!options.Json && !options.DryRun)
+        {
+            NotifyIfUpdateAvailable(log);
+        }
 
         try
         {
@@ -304,10 +314,19 @@ public static class Program
         WriteIndented = true,
     };
 
-    private static string CurrentVersion =>
+    internal static string CurrentVersion =>
         typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
         ?? typeof(Program).Assembly.GetName().Version?.ToString()
         ?? "0.0.0";
+
+    private static void NotifyIfUpdateAvailable(Logger log)
+    {
+        if (SelfUpdate.TryGetLatestVersion(out var latest)
+            && SelfUpdate.IsNewer(CurrentVersion, latest!))
+        {
+            log.Info($"{Environment.NewLine}A newer version ({latest}) is available. Run 'qcompact self-update' to update.");
+        }
+    }
 
     public const string HelpText = """
         qcompact - reclaim unused disk space from WSL 2 virtual disks.
@@ -324,6 +343,7 @@ public static class Program
               --keep-log        Keep the transcript log file.
               --verbose         Verbose output.
           -v, --version         Show version information.
+              self-update       Check for and install a newer release from GitHub.
           -h, --help            Show this help.
 
         qcompact self-elevates with a UAC prompt when it needs administrator
